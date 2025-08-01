@@ -67,12 +67,13 @@ fn main() {
         "dll",
         "qopen",
     ].iter().map(|&s| format!("vendor/unrar/{s}.cpp")).collect();
-    cc::Build::new()
+
+    let mut build = cc::Build::new();
+
+    build
         .cpp(true) // Switch to C++ library compilation.
         .opt_level(2)
         .std("c++14")
-        // by default cc crate tries to link against dynamic stdlib, which causes problems on windows-gnu target
-        .cpp_link_stdlib(None)
         .warnings(false)
         .extra_warnings(false)
         .flag_if_supported("-stdlib=libc++")
@@ -92,6 +93,12 @@ fn main() {
         .define("_LARGEFILE_SOURCE", None)
         .define("RAR_SMP", None)
         .define("RARDLL", None)
-        .files(&files)
-        .compile("libunrar.a");
+        .files(&files);
+
+    // by default cc crate tries to link against dynamic stdlib, which causes problems on windows-gnu target
+    if target_os == "windows" && target_env == "gnu" {
+        build.cpp_link_stdlib(None);
+    }
+
+    build.compile("libunrar.a");
 }
