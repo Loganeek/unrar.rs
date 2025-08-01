@@ -1,11 +1,21 @@
 fn main() {
-    if cfg!(windows) {
-        println!("cargo:rustc-flags=-lpowrprof");
+    let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap_or_default();
+    let target_env = std::env::var("CARGO_CFG_TARGET_ENV").unwrap_or_default();
+    // Windows
+    if target_os == "windows" {
         println!("cargo:rustc-link-lib=shell32");
-        if cfg!(target_env = "gnu") {
+        println!("cargo:rustc-flags=-lpowrprof");
+
+        if target_env == "gnu" {
             println!("cargo:rustc-link-lib=pthread");
         }
-    } else {
+    }
+    // Android
+    else if target_os == "android" {
+        println!("cargo:warning=Building for Android: skipping pthread");
+    }
+    // Linux/macOS ……
+    else {
         println!("cargo:rustc-link-lib=pthread");
     }
     let files: Vec<String> = [
