@@ -18,7 +18,7 @@ fn main() {
     else {
         println!("cargo:rustc-link-lib=pthread");
     }
-    let files: Vec<String> = [
+    let mut files = vec![
         "strlist",
         "strfn",
         "pathfn",
@@ -31,8 +31,6 @@ fn main() {
         "arcread",
         "unicode",
         "system",
-        #[cfg(windows)]
-        "isnt",
         "crypt",
         "crc",
         "rawread",
@@ -66,7 +64,11 @@ fn main() {
         "scantree",
         "dll",
         "qopen",
-    ].iter().map(|&s| format!("vendor/unrar/{s}.cpp")).collect();
+    ];
+    if target_os == "windows"{
+        files.push("isnt");
+    }
+    let files: Vec<_> = files.iter().map(|&s| format!("vendor/unrar/{s}.cpp")).collect();
 
     let mut build = cc::Build::new();
 
